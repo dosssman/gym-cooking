@@ -1,22 +1,23 @@
 # Recipe planning
-from recipe_planner.stripsworld import STRIPSWorld
-import recipe_planner.utils as recipe
-from recipe_planner.recipe import *
+from gym_cooking.recipe_planner.stripsworld import STRIPSWorld
+import gym_cooking.recipe_planner.utils as recipe
+from gym_cooking.recipe_planner.recipe import *
 
 # Delegation planning
-from delegation_planner.bayesian_delegator import BayesianDelegator
+from gym_cooking.delegation_planner.bayesian_delegator import BayesianDelegator
 
 # Navigation planning
-import navigation_planner.utils as nav_utils
+import gym_cooking.navigation_planner.utils as nav_utils
 
 # Other core modules
-from utils.interact import interact
-from utils.world import World
-from utils.core import *
-from utils.agent import SimAgent
-from misc.game.gameimage import GameImage
-from utils.agent import COLORS
+from gym_cooking.utils.interact import interact
+from gym_cooking.utils.world import World
+from gym_cooking.utils.core import *
+from gym_cooking.utils.agent import SimAgent
+from gym_cooking.misc.game.gameimage import GameImage
+from gym_cooking.utils.agent import COLORS
 
+import os
 import copy
 import networkx as nx
 import numpy as np
@@ -91,7 +92,9 @@ class OvercookedEnvironment(gym.Env):
     def load_level(self, level, num_agents):
         x = 0
         y = 0
-        with open('utils/levels/{}.txt'.format(level), 'r') as file:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        print(f"DEBUG: dir_path: {dir_path}")
+        with open('{}/../utils/levels/{}.txt'.format(dir_path, level), 'r') as file:
             # Mark the phases of reading.
             phase = 1
             for line in file:
@@ -206,14 +209,16 @@ class OvercookedEnvironment(gym.Env):
 
         # Get a plan-representation observation.
         new_obs = copy.copy(self)
-        # Get an image observation
-        image_obs = self.game.get_image_obs()
 
         done = self.done()
         reward = self.reward()
         info = {"t": self.t, "obs": new_obs,
-                "image_obs": image_obs,
                 "done": done, "termination_info": self.termination_info}
+
+        # Get an image observation
+        if self.arglist.with_image_obs:
+            info["image_obs"] = self.game.get_image_obs()
+
         return new_obs, reward, done, info
 
 

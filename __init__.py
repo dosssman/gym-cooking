@@ -1,1 +1,1 @@
-from gym_cooking import recipe_planner
+from gym_cooking import gym_cooking.recipe_planner
