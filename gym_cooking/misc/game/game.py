@@ -9,6 +9,9 @@ dirname = pathlib.Path(__file__).parent.absolute()
 graphics_dir = f"{dirname}/graphics"
 _image_library = {}
 
+# Disable sound dependency
+pygame.mixer.quit()
+
 def get_image(path):
     global _image_library
     image = _image_library.get(path)

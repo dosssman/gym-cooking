@@ -47,6 +47,17 @@ class OvercookedEnvironment(gym.Env):
         self.collisions = []
         self.termination_info = ""
         self.successful = False
+        
+        # Add obs and action space to better match
+        # OpenAI Gym's formalism
+        self.observation_space = spaces.Box(
+            low=0,
+            high=255,
+            shape=(560, 560, 3), # By default
+            dtype="uint8"
+        )
+
+        self.action_space = None
 
     def get_repr(self):
         return self.world.get_repr() + tuple([agent.get_repr() for agent in self.sim_agents])
@@ -93,7 +104,6 @@ class OvercookedEnvironment(gym.Env):
         x = 0
         y = 0
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        print(f"DEBUG: dir_path: {dir_path}")
         with open('{}/../utils/levels/{}.txt'.format(dir_path, level), 'r') as file:
             # Mark the phases of reading.
             phase = 1
@@ -178,7 +188,8 @@ class OvercookedEnvironment(gym.Env):
             if self.arglist.record:
                 self.game.save_image_obs(self.t)
 
-        return copy.copy(self)
+        return self.game.get_image_obs()
+        # return copy.copy(self)
 
     def close(self):
         return
@@ -186,9 +197,9 @@ class OvercookedEnvironment(gym.Env):
     def step(self, action_dict):
         # Track internal environment info.
         self.t += 1
-        print("===============================")
-        print("[environment.step] @ TIMESTEP {}".format(self.t))
-        print("===============================")
+        # print("===============================")
+        # print("[environment.step] @ TIMESTEP {}".format(self.t))
+        # print("===============================")
 
         # Get actions.
         for sim_agent in self.sim_agents:
@@ -203,16 +214,17 @@ class OvercookedEnvironment(gym.Env):
 
         # Visualize.
         self.display()
-        self.print_agents()
+        # self.print_agents()
         if self.arglist.record:
             self.game.save_image_obs(self.t)
 
         # Get a plan-representation observation.
-        new_obs = copy.copy(self)
+        new_obs = self.game.get_image_obs() # TODO: more flexible representation returning method ?
+        # new_obs = copy.copy(self)
 
         done = self.done()
         reward = self.reward()
-        info = {"t": self.t, "obs": new_obs,
+        info = {"t": self.t, "obs": new_obs, "real_done": self.successful,
                 "done": done, "termination_info": self.termination_info}
 
         # Get an image observation
@@ -258,7 +270,7 @@ class OvercookedEnvironment(gym.Env):
 
     def display(self):
         self.update_display()
-        print(str(self))
+        # print(str(self))
 
     def update_display(self):
         self.rep = self.world.update_display()
@@ -276,7 +288,7 @@ class OvercookedEnvironment(gym.Env):
         # [path for recipe 1, path for recipe 2, ...] where each path is a list of actions
         subtasks = self.sw.get_subtasks(max_path_length=self.arglist.max_num_subtasks)
         all_subtasks = [subtask for path in subtasks for subtask in path]
-        print('Subtasks:', all_subtasks, '\n')
+        # print('Subtasks:', all_subtasks, '\n')
         return all_subtasks
 
     def get_AB_locs_given_objs(self, subtask, subtask_agent_names, start_obj, goal_obj, subtask_action_obj):
@@ -425,13 +437,13 @@ class OvercookedEnvironment(gym.Env):
                         agent_locations=[agent_i.location, agent_j.location])
                 self.collisions.append(collision)
 
-        print('\nexecute array is:', execute)
+        # print('\nexecute array is:', execute)
 
         # Update agents' actions if collision was detected.
         for i, agent in enumerate(self.sim_agents):
             if not execute[i]:
                 agent.action = (0, 0)
-            print("{} has action {}".format(color(agent.name, agent.color), agent.action))
+            # print("{} has action {}".format(color(agent.name, agent.color), agent.action))
 
     def execute_navigation(self):
         for agent in self.sim_agents:

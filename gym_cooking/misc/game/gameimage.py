@@ -5,7 +5,6 @@ from PIL import Image
 from gym_cooking.misc.game.game import Game
 # from gym_cooking.misc.game.utils import *
 
-
 class GameImage(Game):
     def __init__(self, filename, world, sim_agents, record=False):
         Game.__init__(self, world, sim_agents)
@@ -27,10 +26,9 @@ class GameImage(Game):
 
     def get_image_obs(self):
         self.on_render()
+        img_rgb = pygame.surfarray.array3d(self.screen.copy()) # make a copy of the surface to avoid locking issues
+        img_rgb = img_rgb.swapaxes(0, 1) # swap the height and width dimensions
 
-        surface = self.screen.copy()  # make a copy of the surface to avoid locking issues
-        img_rgb = pygame.surfarray.array3d(surface)
-        img_rgb = img_rgb.swapaxes(0, 1)  # swap the height and width dimensions
         return img_rgb
 
     def save_image_obs(self, t):
