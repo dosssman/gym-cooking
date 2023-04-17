@@ -6,8 +6,6 @@ from gym_cooking.utils.core import *
 from gym_cooking.misc.game.utils import *
 
 dirname = pathlib.Path(__file__).parent.absolute()
-
-# graphics_dir = 'misc/game/graphics'
 graphics_dir = f"{dirname}/graphics"
 _image_library = {}
 
